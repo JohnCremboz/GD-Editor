@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
-find_package(Qt6 REQUIRED COMPONENTS Widgets PrintSupport )
-
+set(CMAKE_PREFIX_PATH "C:/Qt/6.9.1/mingw_64/lib/cmake")
+find_package(Qt6 REQUIRED COMPONENTS Widgets PrintSupport)
 # Include directories
 include_directories(
     ${CMAKE_SOURCE_DIR}/src
