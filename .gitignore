@@ -1,0 +1,26 @@
+# Build artifacts
+/build/
+/out/
+/x64/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+
+# Visual Studio
+/.vs/
+*.vcxproj.user
+*.sln.docstates
+
+# Qt
+/.qt/
+*.user
+
+# Other
+*.dir/
+*.vcxproj
+*.vcxproj.filters
+*.sln
+ZERO_CHECK.vcxproj
+ZERO_CHECK.vcxproj.filters
+ALL_BUILD.vcxproj
+ALL_BUILD.vcxproj.filters
