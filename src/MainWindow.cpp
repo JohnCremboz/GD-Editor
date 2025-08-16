@@ -17,6 +17,8 @@
 #include <QSettings>
 #include <QStatusBar>
 #include <QTextCodec>
+#include <QFontDatabase>
+#include <QVBoxLayout>
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif

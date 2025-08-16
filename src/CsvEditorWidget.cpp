@@ -2,6 +2,7 @@
 #include <QVBoxLayout>
 #include <QFile>
 #include <QTextStream>
+#include <QTextDocument>
 #include <QClipboard>
 #include <QApplication>
 

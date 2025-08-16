@@ -30,7 +30,6 @@ private slots:
     void showHelpDialog();
     void openRecentFile(const QString &filePath);
     void showWelcomePage();
-    void finishLoading();
     void syntaxTypeChanged(const QString &type);
     void charsetChanged(const QString &charset);
 private:
