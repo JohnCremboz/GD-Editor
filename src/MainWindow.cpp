@@ -15,11 +15,21 @@
 #include <QLabel>
 #include <QStackedWidget>
 #include <QSettings>
+#include <QStatusBar>
+#include <QTextCodec>
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+    QFont appFont;
+    QStringList families = QFontDatabase().families();
+    if (families.contains("Fira Code")) {
+        appFont = QFont("Fira Code");
+        appFont.setStyleHint(QFont::Monospace);
+    }
+    QApplication::setFont(appFont);
+
     editorStack = new QStackedWidget(this);
     mdEditor = new MarkdownEditorWidget(this);
     csvEditor = new CsvEditorWidget(this);
@@ -47,6 +57,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // Start met loading screen
     editorStack->setCurrentWidget(loadingScreen);
     loadingTimer->start(1200); // 1,2 sec loading
+
+    syntaxCombo = new QComboBox(this);
+    syntaxCombo->addItems({"Auto", "Markdown", "CSV", "Plaintext"});
+    statusBar()->addPermanentWidget(syntaxCombo);
+    connect(syntaxCombo, &QComboBox::currentTextChanged, this, &MainWindow::syntaxTypeChanged);
+
+    charsetCombo = new QComboBox(this);
+    charsetCombo->addItems({"UTF-8", "ISO-8859-1", "Windows-1252", "UTF-16"});
+    statusBar()->addPermanentWidget(charsetCombo);
+    connect(charsetCombo, &QComboBox::currentTextChanged, this, &MainWindow::charsetChanged);
+    currentCharset = "UTF-8";
 }
 
 void MainWindow::showWelcomePage() {
@@ -97,13 +118,30 @@ void MainWindow::openFile() {
     QString filePath = QFileDialog::getOpenFileName(this, "Open bestand", QString(), "Markdown (*.md);;CSV (*.csv)");
     if (filePath.isEmpty()) return;
     switchEditorMode(filePath);
+    QTextCodec *codec = QTextCodec::codecForName(currentCharset.toUtf8());
+    if (!codec) codec = QTextCodec::codecForName("UTF-8");
     if (filePath.endsWith(".md")) {
-        QString content = FileHandler::readTextFile(filePath);
-        mdEditor->setMarkdown(content);
+        QFile file(filePath);
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QByteArray data = file.readAll();
+            QString content = codec->toUnicode(data);
+            mdEditor->setMarkdown(content);
+            file.close();
+        }
         editorStack->setCurrentWidget(mdEditor);
+        syntaxCombo->setCurrentText("Markdown");
     } else if (filePath.endsWith(".csv")) {
-        csvEditor->loadCsv(filePath);
+        QFile file(filePath);
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QByteArray data = file.readAll();
+            QString content = codec->toUnicode(data);
+            csvEditor->loadCsvFromString(content);
+            file.close();
+        }
         editorStack->setCurrentWidget(csvEditor);
+        syntaxCombo->setCurrentText("CSV");
+    } else {
+        syntaxCombo->setCurrentText("Plaintext");
     }
     currentFilePath = filePath;
     // Voeg toe aan recentFiles
@@ -120,10 +158,22 @@ void MainWindow::saveFile() {
         saveFileAs();
         return;
     }
+    QTextCodec *codec = QTextCodec::codecForName(currentCharset.toUtf8());
+    if (!codec) codec = QTextCodec::codecForName("UTF-8");
     if (currentFilePath.endsWith(".md")) {
-        FileHandler::writeTextFile(currentFilePath, mdEditor->markdown());
+        QFile file(currentFilePath);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QByteArray data = codec->fromUnicode(mdEditor->markdown());
+            file.write(data);
+            file.close();
+        }
     } else if (currentFilePath.endsWith(".csv")) {
-        csvEditor->saveCsv(currentFilePath);
+        QFile file(currentFilePath);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QByteArray data = codec->fromUnicode(csvEditor->toCsvString());
+            file.write(data);
+            file.close();
+        }
     }
 }
 
@@ -188,9 +238,29 @@ void MainWindow::setDarkTheme() {
 }
 void MainWindow::applyTheme(const QString &themeName) {
     if (themeName == "dark") {
-        qApp->setStyleSheet("QWidget { background: #232629; color: #e0e0e0; } QMenuBar, QMenu { background: #232629; color: #e0e0e0; } QTextEdit, QTableView { background: #2b2b2b; color: #e0e0e0; }");
+        qApp->setStyleSheet(R"(
+            QWidget { background: #232629; color: #e0e0e0; font-size: 13px; }
+            QMenuBar, QMenu { background: #232629; color: #e0e0e0; border: none; }
+            QMenu::item:selected { background: #444; }
+            QTextEdit, QTableView, QListWidget { background: #2b2b2b; color: #e0e0e0; border-radius: 6px; border: 1px solid #444; }
+            QPushButton { background: #333; color: #e0e0e0; border-radius: 6px; padding: 6px 16px; border: 1px solid #444; }
+            QPushButton:hover { background: #444; }
+            QLineEdit, QInputDialog { background: #232629; color: #e0e0e0; border-radius: 6px; border: 1px solid #444; }
+            QScrollBar:vertical, QScrollBar:horizontal { background: #232629; width: 10px; border-radius: 5px; }
+            QScrollBar::handle { background: #444; border-radius: 5px; }
+        )");
     } else {
-        qApp->setStyleSheet("");
+        qApp->setStyleSheet(R"(
+            QWidget { background: #f7f7f7; color: #232629; font-size: 13px; }
+            QMenuBar, QMenu { background: #f7f7f7; color: #232629; border: none; }
+            QMenu::item:selected { background: #e0e0e0; }
+            QTextEdit, QTableView, QListWidget { background: #ffffff; color: #232629; border-radius: 6px; border: 1px solid #ccc; }
+            QPushButton { background: #f0f0f0; color: #232629; border-radius: 6px; padding: 6px 16px; border: 1px solid #ccc; }
+            QPushButton:hover { background: #e0e0e0; }
+            QLineEdit, QInputDialog { background: #f7f7f7; color: #232629; border-radius: 6px; border: 1px solid #ccc; }
+            QScrollBar:vertical, QScrollBar:horizontal { background: #f7f7f7; width: 10px; border-radius: 5px; }
+            QScrollBar::handle { background: #ccc; border-radius: 5px; }
+        )");
     }
 }
 
@@ -241,4 +311,19 @@ void MainWindow::showHelpDialog() {
         "- Live preview voor Markdown.\n"
         "- CSV-bewerking met tabelweergave.\n"
         "- Zie 'Over...' voor auteur en copyright.\n");
+}
+
+void MainWindow::syntaxTypeChanged(const QString &type) {
+    if (editorStack->currentWidget() == mdEditor) {
+        if (type == "Markdown" || (type == "Auto" && currentFilePath.endsWith(".md"))) {
+            mdEditor->setHighlightingEnabled(true);
+        } else {
+            mdEditor->setHighlightingEnabled(false);
+        }
+    }
+    // Voor CSV en Plaintext kun je uitbreiden met andere highlighters
+}
+
+void MainWindow::charsetChanged(const QString &charset) {
+    currentCharset = charset;
 }

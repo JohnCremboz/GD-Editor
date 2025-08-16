@@ -19,6 +19,7 @@ public:
     void paste();
     void cut();
     void setHighlightColors(const QColor &header, const QColor &bold, const QColor &italic, const QColor &code);
+    void setHighlightingEnabled(bool enabled);
 private slots:
     void updatePreview();
     void togglePreview();

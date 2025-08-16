@@ -7,6 +7,9 @@
 
 MarkdownEditorWidget::MarkdownEditorWidget(QWidget *parent) : QWidget(parent) {
     editor = new QTextEdit(this);
+    QFont font("Fira Code");
+    font.setStyleHint(QFont::Monospace);
+    editor->setFont(font);
     highlighter = new MarkdownHighlighter(editor->document());
     preview = new MarkdownPreviewWidget(this);
     toggleButton = new QPushButton("Toon/verberg preview", this);
@@ -63,4 +66,13 @@ void MarkdownEditorWidget::setHighlightColors(const QColor &header, const QColor
     highlighter->setBoldColor(bold);
     highlighter->setItalicColor(italic);
     highlighter->setCodeColor(code);
+}
+
+void MarkdownEditorWidget::setHighlightingEnabled(bool enabled) {
+    if (enabled && !highlighter) {
+        highlighter = new MarkdownHighlighter(editor->document());
+    } else if (!enabled && highlighter) {
+        delete highlighter;
+        highlighter = nullptr;
+    }
 }

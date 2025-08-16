@@ -15,6 +15,8 @@ public:
     void copy();
     void paste();
     void cut();
+    void loadCsvFromString(const QString &csv);
+    QString toCsvString() const;
 private:
     QTableView *tableView;
     QStandardItemModel *model;

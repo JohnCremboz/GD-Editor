@@ -4,6 +4,8 @@
 #include <QColor>
 #include "WelcomePage.h"
 #include <QTimer>
+#include <QComboBox>
+#include <QTextCodec>
 
 class MarkdownEditorWidget;
 class CsvEditorWidget;
@@ -29,6 +31,8 @@ private slots:
     void openRecentFile(const QString &filePath);
     void showWelcomePage();
     void finishLoading();
+    void syntaxTypeChanged(const QString &type);
+    void charsetChanged(const QString &charset);
 private:
     QStackedWidget *editorStack;
     MarkdownEditorWidget *mdEditor;
@@ -38,6 +42,9 @@ private:
     QString currentFilePath;
     QWidget *loadingScreen;
     QTimer *loadingTimer;
+    QComboBox *syntaxCombo;
+    QComboBox *charsetCombo;
+    QString currentCharset;
     void switchEditorMode(const QString &filePath);
     void setupMenus();
     void updateWindowTitle();

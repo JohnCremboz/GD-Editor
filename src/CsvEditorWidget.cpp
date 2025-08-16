@@ -113,3 +113,11 @@ void CsvEditorWidget::cut() {
         model->setItem(idx.row(), idx.column(), new QStandardItem(""));
     }
 }
+
+void CsvEditorWidget::loadCsvFromString(const QString &csv) {
+    fromCsv(csv);
+}
+
+QString CsvEditorWidget::toCsvString() const {
+    return toCsv();
+}

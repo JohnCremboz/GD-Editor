@@ -1,0 +1,3 @@
+C:/Users/gertj/OneDrive/Documenten/GD-Editor/CMakeFiles/MarkdownCsvEditor.dir
+C:/Users/gertj/OneDrive/Documenten/GD-Editor/CMakeFiles/ALL_BUILD.dir
+C:/Users/gertj/OneDrive/Documenten/GD-Editor/CMakeFiles/ZERO_CHECK.dir
